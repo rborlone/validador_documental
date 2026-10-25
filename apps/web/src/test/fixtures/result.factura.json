@@ -1,0 +1,156 @@
+{
+  "documentId": "3f1c2a9e-7b4d-4e8a-9c21-5d6f0a1b2c3d",
+  "documentType": {
+    "value": "factura_sii",
+    "confidence": 0.93,
+    "method": "rules",
+    "reason": "Coinciden 6 de 7 palabras clave del template (FACTURA ELECTRÓNICA, R.U.T., S.I.I., IVA…)."
+  },
+  "templateVersion": "1.0.0",
+  "extracted": {
+    "rut_emisor": {
+      "value": "76.123.456-0",
+      "source": "text",
+      "confidence": 0.98
+    },
+    "razon_social_emisor": {
+      "value": "Comercial Los Andes SpA",
+      "source": "text",
+      "confidence": 0.95
+    },
+    "rut_receptor": {
+      "value": "96.555.444-0",
+      "source": "ocr",
+      "confidence": 0.88
+    },
+    "folio": {
+      "value": "12345",
+      "source": "text",
+      "confidence": 0.99
+    },
+    "fecha_emision": {
+      "value": "2026-10-15",
+      "source": "text",
+      "confidence": 0.97
+    },
+    "monto_neto": {
+      "value": 1250000,
+      "source": "text",
+      "confidence": 0.96
+    },
+    "monto_exento": {
+      "value": 0,
+      "source": "text",
+      "confidence": 0.9
+    },
+    "iva": {
+      "value": 237500,
+      "source": "text",
+      "confidence": 0.96
+    },
+    "monto_total": {
+      "value": 1487500,
+      "source": "text",
+      "confidence": 0.97
+    },
+    "forma_pago": {
+      "value": "Crédito 30 días",
+      "source": "llm",
+      "confidence": 0.71
+    },
+    "lineas": {
+      "value": [
+        {
+          "descripcion": "Licencia software anual",
+          "cantidad": 1,
+          "precio_unitario": 900000,
+          "monto": 900000
+        },
+        {
+          "descripcion": "Horas de soporte",
+          "cantidad": 7,
+          "precio_unitario": 50000,
+          "monto": 350000
+        }
+      ],
+      "source": "text",
+      "confidence": 0.9
+    }
+  },
+  "checks": [
+    {
+      "id": "required.folio",
+      "passed": true,
+      "severity": "error",
+      "detail": "Folio presente."
+    },
+    {
+      "id": "rut.emisor",
+      "passed": true,
+      "severity": "error",
+      "detail": "RUT 76.123.456-0 con dígito verificador válido."
+    },
+    {
+      "id": "rut.receptor",
+      "passed": true,
+      "severity": "error",
+      "detail": "RUT 96.555.444-0 con dígito verificador válido."
+    },
+    {
+      "id": "totals.lineas",
+      "passed": true,
+      "severity": "error",
+      "detail": "Σ líneas = 1.250.000 = monto neto."
+    },
+    {
+      "id": "totals.iva",
+      "passed": true,
+      "severity": "error",
+      "detail": "IVA 237.500 = 19% de 1.250.000 (±1)."
+    },
+    {
+      "id": "totals.total",
+      "passed": true,
+      "severity": "error",
+      "detail": "Neto + IVA + exento = 1.487.500 = total."
+    },
+    {
+      "id": "fecha.emision",
+      "passed": true,
+      "severity": "warning",
+      "detail": "Fecha de emisión no es futura."
+    }
+  ],
+  "authenticity": {
+    "score": 0.12,
+    "level": "LOW",
+    "signals": [
+      {
+        "id": "pdf.producer",
+        "weight": 0.12,
+        "detail": "Producer genérico: «Microsoft: Print To PDF»."
+      }
+    ]
+  },
+  "signature": {
+    "status": "NOT_IMPLEMENTED"
+  },
+  "verdict": "VALID",
+  "pages": 1,
+  "textSource": "text",
+  "llmUsed": true,
+  "llmCalls": [
+    {
+      "purpose": "extract",
+      "outcome": "ok",
+      "model": "claude-sonnet-5-5",
+      "ms": 5159,
+      "inputTokens": 6722,
+      "outputTokens": 367,
+      "fields": [
+        "forma_pago"
+      ]
+    }
+  ],
+  "processingMs": 4210
+}

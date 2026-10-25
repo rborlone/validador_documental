@@ -1,0 +1,292 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://validador.local/contracts/validation-result.schema.json",
+  "title": "ValidationResult",
+  "type": "object",
+  "required": [
+    "documentId",
+    "documentType",
+    "templateVersion",
+    "extracted",
+    "checks",
+    "authenticity",
+    "signature",
+    "verdict",
+    "pages",
+    "textSource",
+    "processingMs"
+  ],
+  "properties": {
+    "documentId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "documentType": {
+      "type": "object",
+      "required": [
+        "value",
+        "confidence",
+        "method"
+      ],
+      "properties": {
+        "value": {
+          "type": "string",
+          "enum": [
+            "factura_sii",
+            "orden_compra",
+            "certificado_vigencia",
+            "cedula_identidad",
+            "contrato",
+            "certificado_accidentabilidad",
+            "carpeta_tributaria",
+            "certificado_f30",
+            "desconocido"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "rules",
+            "llm",
+            "expected"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "templateVersion": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "extracted": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "value",
+          "source",
+          "confidence"
+        ],
+        "properties": {
+          "value": {},
+          "source": {
+            "type": "string",
+            "enum": [
+              "text",
+              "ocr",
+              "llm"
+            ]
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Campos del template. Los campos de lista (p. ej. lineas) llevan en value un arreglo de objetos."
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "passed",
+          "severity",
+          "detail"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "examples": [
+              "rut.emisor",
+              "totals.iva",
+              "vigencia",
+              "required.folio"
+            ]
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "error",
+              "warning"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "authenticity": {
+      "type": "object",
+      "required": [
+        "score",
+        "level",
+        "signals"
+      ],
+      "properties": {
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Riesgo de falsificación: 0 = sin señales."
+        },
+        "level": {
+          "type": "string",
+          "enum": [
+            "LOW",
+            "MEDIUM",
+            "HIGH"
+          ]
+        },
+        "signals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "weight",
+              "detail"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "weight": {
+                "type": "number"
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "signature": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "NOT_IMPLEMENTED"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "VALID",
+        "INVALID",
+        "REVIEW"
+      ],
+      "description": "INVALID si falla un check de severidad error; REVIEW si hay riesgo MEDIUM/HIGH, tipo desconocido o baja confianza; si no, VALID."
+    },
+    "pages": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "textSource": {
+      "type": "string",
+      "enum": [
+        "text",
+        "ocr",
+        "mixed"
+      ]
+    },
+    "llmUsed": {
+      "type": "boolean"
+    },
+    "llmCalls": {
+      "type": "array",
+      "description": "Llamadas al LLM hechas al validar el documento (vacío si se resolvió solo con reglas).",
+      "items": {
+        "type": "object",
+        "required": [
+          "purpose",
+          "outcome",
+          "model",
+          "ms",
+          "inputTokens",
+          "outputTokens"
+        ],
+        "properties": {
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "classify",
+              "extract",
+              "visual_review"
+            ],
+            "description": "classify: decidir el tipo; extract: completar campos; visual_review: opinión sobre autenticidad."
+          },
+          "outcome": {
+            "type": "string",
+            "examples": [
+              "ok",
+              "timeout",
+              "refusal",
+              "schema_mismatch",
+              "rate_limited"
+            ]
+          },
+          "model": {
+            "type": "string"
+          },
+          "ms": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "inputTokens": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "outputTokens": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Campos pedidos (solo extract)."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "processingMs": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "additionalProperties": false
+}

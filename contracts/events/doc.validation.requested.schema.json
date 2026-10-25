@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://validador.local/contracts/events/doc.validation.requested.schema.json",
+  "title": "doc.validation.requested",
+  "description": "Pide validar un documento ya guardado en Blob.",
+  "type": "object",
+  "required": [
+    "specversion",
+    "id",
+    "source",
+    "type",
+    "time",
+    "datacontenttype",
+    "correlationid",
+    "data"
+  ],
+  "properties": {
+    "specversion": {
+      "const": "1.0"
+    },
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "source": {
+      "type": "string",
+      "examples": [
+        "/documents-service",
+        "/doc-validator"
+      ]
+    },
+    "type": {
+      "const": "doc.validation.requested"
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "datacontenttype": {
+      "const": "application/json"
+    },
+    "correlationid": {
+      "type": "string"
+    },
+    "data": {
+      "type": "object",
+      "required": [
+        "documentId",
+        "container",
+        "blobName",
+        "contentType",
+        "filename",
+        "attempt"
+      ],
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "container": {
+          "type": "string"
+        },
+        "blobName": {
+          "type": "string"
+        },
+        "contentType": {
+          "type": "string",
+          "enum": [
+            "application/pdf",
+            "image/png",
+            "image/jpeg",
+            "image/tiff"
+          ]
+        },
+        "filename": {
+          "type": "string"
+        },
+        "expectedType": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "factura_sii",
+            "orden_compra",
+            "certificado_vigencia",
+            "cedula_identidad",
+            "contrato",
+            "certificado_accidentabilidad",
+            "carpeta_tributaria",
+            "certificado_f30",
+            "desconocido",
+            null
+          ]
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

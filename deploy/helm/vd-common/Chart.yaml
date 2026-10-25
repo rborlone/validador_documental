@@ -1,0 +1,5 @@
+apiVersion: v2
+name: vd-common
+description: Plantillas compartidas (library chart) para los servicios del Validador Documental
+type: library
+version: 0.1.0

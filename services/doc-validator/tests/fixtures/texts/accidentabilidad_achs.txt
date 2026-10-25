@@ -1,0 +1,17 @@
+Folio: 10000001
+Certificado de Tasas
+Certificamos que la empresa MINERA DEL NORTE LIMITADA, Nº de
+asociada 2000000001, RUT: 76555666-K está adherida a esta institución y
+registra la siguiente información estadística:
+N° de Accidentes 4 2 6
+Días perdidos por accidentes 369 91 241
+Tasa de frecuencia 1,76 0,85 3,81
+Tasa de gravedad 287,3 39,2 172,1
+Tasa de siniestralidad por 62,13 10,18 37,17
+incapacidades temporales
+Tasa de accidentabilidad (%) 0,51 0,22 0,82
+Válido por 90 días desde la fecha de emisión Santiago, 06 de octubre del 2025
+Cod.Verificación: 10000001
+Antofagasta, 09 de Octubre, del 2025
+de mochila de accidentes traspasada desde Mutual de Seguridad
+Asociación Chilena de Seguridad

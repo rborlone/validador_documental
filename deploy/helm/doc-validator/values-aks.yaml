@@ -1,0 +1,17 @@
+# Valores de ejemplo para AKS. Reemplaza los <...>.
+image:
+  registry: <acr>.azurecr.io
+workloadIdentity:
+  clientId: <client-id-identidad-federada>
+secretsStore:
+  enabled: true
+  keyVaultName: <key-vault>
+  tenantId: <tenant-id>
+  objects:
+    - { keyVaultSecret: rabbitmq-url, key: RABBITMQ_URL }
+    - { keyVaultSecret: storage-connection-string, key: AZURE_STORAGE_CONNECTION_STRING }
+    - { keyVaultSecret: anthropic-api-key, key: ANTHROPIC_API_KEY }
+secretEnv:
+  - { name: RABBITMQ_URL, secretName: doc-validator-secrets, key: RABBITMQ_URL }
+  - { name: AZURE_STORAGE_CONNECTION_STRING, secretName: doc-validator-secrets, key: AZURE_STORAGE_CONNECTION_STRING }
+  - { name: ANTHROPIC_API_KEY, secretName: doc-validator-secrets, key: ANTHROPIC_API_KEY }

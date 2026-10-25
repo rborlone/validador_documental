@@ -1,0 +1,61 @@
+nameOverride: ""
+fullnameOverride: ""
+replicaCount: 2
+image:
+  registry: ""          # p. ej. miacr.azurecr.io
+  repository: validador/documents-service
+  tag: ""               # por defecto appVersion del chart
+  pullPolicy: IfNotPresent
+containerPort: 3100
+service:
+  port: 80
+terminationGracePeriodSeconds: 30
+readOnlyRootFilesystem: true
+env:
+  PORT: "3100"
+  BLOB_CONTAINER: "documents"
+  MAX_FILE_SIZE_MB: "20"
+  LOG_LEVEL: "info"
+probes:
+  port: 3100
+  livePath: /health/live
+  readyPath: /health/ready
+resources:
+  requests: { cpu: 100m, memory: 192Mi }
+  limits: { memory: 384Mi }
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPU: 70
+keda:
+  enabled: false   # solo el worker escala con KEDA
+pdb:
+  enabled: true
+  minAvailable: 1
+metrics:
+  enabled: false
+  port: 0
+  path: /metrics
+workloadIdentity:
+  clientId: ""          # client id de la identidad administrada federada
+secretsStore:
+  enabled: false
+  keyVaultName: ""
+  tenantId: ""
+  secretName: documents-service-secrets
+  objects: []           # [{ keyVaultSecret: nombre-en-kv, key: CLAVE_EN_SECRET }]
+secretEnv: []           # [{ name: VAR, secretName: documents-service-secrets, key: CLAVE_EN_SECRET }]
+networkPolicy:
+  enabled: true
+  allowFrom: [bff]
+  allowNamespaceLabels: {}
+ingress:
+  enabled: false
+  className: webapprouting.kubernetes.azure.com
+  host: ""
+  paths: []
+  annotations: {}
+  tls: []
+nodeSelector: {}
+tolerations: []

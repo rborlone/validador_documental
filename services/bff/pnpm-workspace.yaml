@@ -1,0 +1,5 @@
+# Servicio independiente (sin workspace raíz). Ningún paquete necesita scripts de instalación.
+allowBuilds:
+  '@parcel/watcher': false
+  '@scarf/scarf': false
+  unrs-resolver: false

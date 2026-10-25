@@ -1,0 +1,64 @@
+// Esquema de datos del documents-service.
+// Las migraciones viven en prisma/migrations y se aplican al arrancar con `prisma migrate deploy`.
+
+generator client {
+  provider      = "prisma-client-js"
+  // "native" resuelve el motor de la plataforma donde se genera: darwin en local y
+  // linux-musl-openssl-3.0.x (amd64/arm64) dentro de la imagen node:alpine (requiere openssl).
+  binaryTargets = ["native"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DocumentStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+
+  @@map("document_status")
+}
+
+model Document {
+  id            String         @id @db.Uuid
+  filename      String
+  contentType   String         @map("content_type")
+  sizeBytes     BigInt         @map("size_bytes")
+  container     String
+  blobName      String         @map("blob_name")
+  status        DocumentStatus @default(QUEUED)
+  expectedType  String?        @map("expected_type")
+  // Copias desnormalizadas de result.documentType.value y result.verdict para listar sin leer el JSON completo.
+  documentType  String?        @map("document_type")
+  verdict       String?
+  result        Json?          @db.JsonB
+  error         Json?          @db.JsonB
+  attempts      Int            @default(0)
+  correlationId String?        @map("correlation_id")
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([createdAt(sort: Desc)], map: "documents_created_at_idx")
+  @@index([result(ops: JsonbPathOps)], type: Gin, map: "documents_result_gin_idx")
+  @@map("documents")
+}
+
+model OutboxMessage {
+  id            String    @id @db.Uuid
+  type          String
+  exchange      String
+  routingKey    String    @map("routing_key")
+  payload       Json      @db.JsonB
+  correlationId String?   @map("correlation_id")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  publishedAt   DateTime? @map("published_at") @db.Timestamptz(3)
+  attempts      Int       @default(0)
+  nextAttemptAt DateTime  @default(now()) @map("next_attempt_at") @db.Timestamptz(3)
+  lastError     String?   @map("last_error")
+
+  @@index([createdAt], map: "outbox_pending_idx")
+  @@map("outbox")
+}

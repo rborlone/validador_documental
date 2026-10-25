@@ -1,0 +1,74 @@
+# Cédula de identidad chilena (Servicio de Registro Civil e Identificación).
+id: cedula_identidad
+version: "1.0.0"
+name: Cédula de identidad
+schema: cedula_identidad
+
+classification:
+  description: >-
+    Cédula de identidad chilena: República de Chile, Servicio de Registro Civil e
+    Identificación, RUN, apellidos, nombres, nacionalidad, sexo, fechas de nacimiento,
+    emisión y vencimiento y número de documento.
+  keywords:
+    - { pattern: 'c[eéè]dula\s+de\s+identidad', weight: 5 }
+    - { pattern: 'rep[uúü]blica\s+de\s+chile', weight: 2 }
+    - { pattern: 'registro\s+civil', weight: 2 }
+    - { pattern: '\bRUN\b', weight: 2 }
+    - { pattern: '\bapellidos\b', weight: 1 }
+    - { pattern: '\bnombres\b', weight: 1 }
+    - { pattern: '\bnacionalidad\b', weight: 1 }
+    - { pattern: 'fecha\s+de\s+nacimiento', weight: 1 }
+    - { pattern: 'n[uúü]mero\s+(?:de\s+)?documento', weight: 1 }
+
+fields:
+  - name: run
+    type: rut
+    required: true
+    patterns:
+      - '\bRUN[ \t]*:?[ \t]*(?P<value><<RUT>>)'
+      - '(?P<value><<RUT>>)'
+  - name: apellidos
+    required: true
+    patterns:
+      - '\bapellidos[ \t]*:?[ \t]*\n?[ \t]*(?P<value>[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ \t]{2,60}?)[ \t]*$'
+  - name: nombres
+    required: true
+    patterns:
+      - '\bnombres[ \t]*:?[ \t]*\n?[ \t]*(?P<value>[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ \t]{2,60}?)[ \t]*$'
+  # En la cédula las etiquetas van sobre los valores y a veces en dos columnas
+  # ("NACIONALIDAD SEXO" / "CHILENA F"): primero se prueba el diseño en columnas.
+  - name: nacionalidad
+    patterns:
+      - '\bnacionalidad[ \t]+sexo[ \t]*\n[ \t]*(?P<value>[A-ZÁÉÍÓÚÑ]{4,30})'
+      - '\bnacionalidad[ \t]*:?[ \t]*\n?[ \t]*(?P<value>[A-ZÁÉÍÓÚÑ]{4,30})'
+  - name: sexo
+    patterns:
+      - '\bnacionalidad[ \t]+sexo[ \t]*\n[ \t]*[A-ZÁÉÍÓÚÑ]{4,30}[ \t]+(?P<value>[MF])\b'
+      - '\bsexo[ \t]*:?[ \t]*\n?[ \t]*(?P<value>[MF])\b'
+  - name: fecha_nacimiento
+    type: date
+    patterns:
+      - 'fecha[ \t]+de[ \t]+nacimiento[ \t]*:?[ \t]*\n?[ \t]*(?P<value><<DATE>>)'
+      - 'fecha[ \t]+de[ \t]+nacimiento[^\n]*\n[ \t]*(?P<value><<DATE>>)'
+  - name: numero_documento
+    patterns:
+      - 'n[uúü]mero[ \t]+(?:de[ \t]+)?documento[ \t]*:?[ \t]*\n?[ \t]*(?P<value>\d{3}\.?\d{3}\.?\d{3})'
+      - 'n[uúü]mero[ \t]+(?:de[ \t]+)?documento[^\n]*\n[^\n]*?(?P<value>\d{3}\.\d{3}\.\d{3})\b'
+  - name: fecha_emision
+    type: date
+    patterns:
+      - 'fecha[ \t]+de[ \t]+emisi[oóé6]n[ \t]*:?[ \t]*\n?[ \t]*(?P<value><<DATE>>)'
+      # Diseño en dos columnas: etiquetas en una línea y fechas en la siguiente.
+      - 'fecha[ \t]+de[ \t]+emisi[oóé6]n[ \t]+fecha[ \t]+de[ \t]+vencimiento[ \t]*\n[ \t]*(?P<value><<DATE>>)'
+  - name: fecha_vencimiento
+    type: date
+    required: true
+    patterns:
+      # Primero el diseño en dos columnas (la 1ª fecha de la línea siguiente es la de emisión).
+      - 'fecha[ \t]+de[ \t]+emisi[oóé6]n[ \t]+fecha[ \t]+de[ \t]+vencimiento[ \t]*\n[ \t]*<<DATE>>[ \t]+(?P<value><<DATE>>)'
+      - 'fecha[ \t]+de[ \t]+vencimiento[ \t]*:?[ \t]*\n?[ \t]*(?P<value><<DATE>>)'
+
+rules:
+  - { id: rut.run, type: rut, field: run }
+  - { id: fecha.orden, type: date_order, before: fecha_emision, after: fecha_vencimiento, severity: warning }
+  - { id: vigencia, type: vigencia, expiry_field: fecha_vencimiento }

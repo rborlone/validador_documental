@@ -1,0 +1,62 @@
+# Contrato entre dos partes. La vigencia solo se verifica si el contrato declara fecha de término.
+id: contrato
+version: "1.0.0"
+name: Contrato
+schema: contrato
+
+classification:
+  description: >-
+    Contrato privado entre dos partes (prestación de servicios, arriendo, trabajo,
+    compraventa): comparecencia de las partes con RUT, cláusulas numeradas y firmas.
+  keywords:
+    - { pattern: '\bcontrato\b', weight: 4 }
+    - { pattern: '\bcomparece[n]?\b|comparecientes', weight: 2 }
+    - { pattern: 'en\s+adelante', weight: 2 }
+    - { pattern: 'cl[aá]usula|\bprimer[oa]\s*:|\bsegund[oa]\s*:', weight: 2 }
+    - { pattern: '(?:las|ambas)\s+partes', weight: 1 }
+    - { pattern: '\bfirma[n]?\b', weight: 1 }
+    - { pattern: 'domicili(?:o|ad[oa]s?)', weight: 1 }
+
+fields:
+  - name: tipo_contrato
+    patterns:
+      - '^[ \t]*(?P<value>contrato[ \t]+de[ \t]+[^\n]{3,80}?)[ \t]*$'
+  - name: ciudad
+    patterns:
+      - '\ben\s+(?P<value>[A-ZÁÉÍÓÚÑ][A-Za-zÁÉÍÓÚÑáéíóúñ ]{2,40}?)(?:\s+de\s+chile)?\s*,\s*a\s+'
+  - name: fecha_celebracion
+    type: date
+    required: true
+    patterns:
+      - ',\s*a\s+(?:\d{1,2}\s+d[iíl1]as\s+del\s+mes\s+de\s+)?(?P<value><<DATE>>)'
+      - 'fecha\s*:\s*(?P<value><<DATE>>)'
+  - name: parte_1
+    patterns:
+      - '\bentre\s+(?:don\s+|doña\s+|la\s+sociedad\s+)?(?P<value>[^,\n]{3,80}?)\s*,\s*(?:rol\s+[uúü]nico\s+tributario|R\.?\s?U\.?\s?T)'
+  - name: rut_parte_1
+    type: rut
+    required: true
+    patterns:
+      - 'R\.?[ \t]?U\.?[ \t]?T\.?\s*(?:N[°º.]?)?\s*:?\s*(?P<value><<RUT>>)'
+  - name: parte_2
+    patterns:
+      - 'en\s+adelante[^,]{1,60},\s+y\s+(?:don\s+|doña\s+|la\s+sociedad\s+)?(?P<value>[^,\n]{3,80}?)\s*,\s*(?:rol\s+[uúü]nico\s+tributario|R\.?\s?U\.?\s?T)'
+  - name: rut_parte_2
+    type: rut
+    occurrence: 2
+    patterns:
+      - 'R\.?[ \t]?U\.?[ \t]?T\.?\s*(?:N[°º.]?)?\s*:?\s*(?P<value><<RUT>>)'
+  - name: monto
+    type: amount
+    patterns:
+      - '(?:precio|monto|honorarios?|suma|renta)(?:\s+(?:mensual|total|[uúü]nico))?\s+(?:de\s+|ascendente\s+a\s+)?(?P<value>\$[ \t]?\d{1,3}(?:\.\d{3})+)'
+  - name: fecha_termino
+    type: date
+    patterns:
+      - '(?:hasta\s+el|t[eéè]rmino\s+(?:el|con\s+fecha)|vencimiento\s*:?)\s*(?:d[iíl1]a\s+)?(?P<value><<DATE>>)'
+
+rules:
+  - { id: rut.parte_1, type: rut, field: rut_parte_1 }
+  - { id: rut.parte_2, type: rut, field: rut_parte_2, optional: true }
+  - { id: fecha.celebracion_no_futura, type: date_not_future, field: fecha_celebracion, severity: warning }
+  - { id: vigencia, type: vigencia, expiry_field: fecha_termino, optional: true }

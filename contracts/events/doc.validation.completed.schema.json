@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://validador.local/contracts/events/doc.validation.completed.schema.json",
+  "title": "doc.validation.completed",
+  "description": "Validación terminada (el veredicto puede ser VALID, INVALID o REVIEW).",
+  "type": "object",
+  "required": [
+    "specversion",
+    "id",
+    "source",
+    "type",
+    "time",
+    "datacontenttype",
+    "correlationid",
+    "data"
+  ],
+  "properties": {
+    "specversion": {
+      "const": "1.0"
+    },
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "source": {
+      "type": "string",
+      "examples": [
+        "/documents-service",
+        "/doc-validator"
+      ]
+    },
+    "type": {
+      "const": "doc.validation.completed"
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "datacontenttype": {
+      "const": "application/json"
+    },
+    "correlationid": {
+      "type": "string"
+    },
+    "data": {
+      "type": "object",
+      "required": [
+        "documentId",
+        "result"
+      ],
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "result": {
+          "$ref": "../validation-result.schema.json"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

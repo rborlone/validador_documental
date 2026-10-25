@@ -1,0 +1,10 @@
+# Valores de ejemplo para AKS. Reemplaza los <...>.
+image:
+  registry: <acr>.azurecr.io
+workloadIdentity:
+  clientId: <client-id-identidad-federada>
+ingress:
+  enabled: true
+  host: validador.example.com
+  paths: [/]
+  tls: [{ hosts: [validador.example.com], secretName: validador-tls }]

@@ -1,0 +1,60 @@
+# Certificado de vigencia (sociedad, poderes, inscripción). Vigente si no ha vencido.
+id: certificado_vigencia
+version: "1.0.0"
+name: Certificado de vigencia
+schema: certificado_vigencia
+
+classification:
+  description: >-
+    Certificado emitido por una institución (Conservador de Bienes Raíces, Registro de
+    Empresas, notaría, servicio público) que acredita que una sociedad, poder o inscripción
+    está vigente, con fecha de emisión y plazo de validez o fecha de vencimiento.
+  keywords:
+    - { pattern: 'certificado\s+de\s+vigencia', weight: 5 }
+    - { pattern: '\bvigen(?:te|cia)\b', weight: 2 }
+    - { pattern: '\bcertific[oa]\b', weight: 1 }
+    - { pattern: 'conservador|registro\s+de\s+(?:comercio|empresas)|notar[iíl1]a|ministerio|servicio\s+de', weight: 1 }
+    - { pattern: '(?:v[aá]lido|validez)[\s\S]{0,40}?d[iíl1]as|fecha\s+de\s+vencimiento|v[aá]lido\s+hasta', weight: 2 }
+    - { pattern: 'c[oóé6]digo\s+de\s+verificaci[oóé6]n|verifi(?:que|car)\s+(?:en|este)', weight: 1 }
+    - { pattern: 'inscri(?:ta|pci[oóé6]n)|fojas', weight: 1 }
+
+fields:
+  - name: numero_certificado
+    patterns:
+      - 'certificado[ \t]+(?:de[ \t]+vigencia[ \t]+)?(?:N[°º.]?|folio)[ \t]*:?[ \t]*(?P<value>(?=[A-Z\-]*\d)[A-Z0-9\-]{3,20})\b'
+      - 'folio[ \t]*:?[ \t]*(?P<value>(?=[A-Z\-]*\d)[A-Z0-9\-]{3,20})\b'
+  - name: emisor
+    patterns:
+      - '^[ \t]*(?P<value>(?:conservador|registro|servicio|ministerio|notar[iíl1]a)[^\n]{3,80}?)[ \t]*$'
+  - name: titular
+    required: true
+    patterns:
+      - '(?:sociedad|raz[oóé6]n[ \t]+social|titular)[ \t]*:[ \t]*(?P<value>[^\n]+?)[ \t]*$'
+  - name: rut_titular
+    type: rut
+    patterns:
+      - 'R\.?[ \t]?U\.?[ \t]?T\.?[ \t]*(?:N[°º.]?)?[ \t]*:?[ \t]*(?P<value><<RUT>>)'
+  - name: fecha_emision
+    type: date
+    required: true
+    patterns:
+      - '(?:fecha[ \t]+de[ \t]+emisi[oóé6]n|emitido[ \t]+(?:el|con[ \t]+fecha))[ \t]*:?[ \t]*(?P<value><<DATE>>)'
+  - name: fecha_vencimiento
+    type: date
+    patterns:
+      - '(?:fecha[ \t]+de[ \t]+vencimiento|v[aá]lido[ \t]+hasta(?:[ \t]+el)?)[ \t]*:?[ \t]*(?P<value><<DATE>>)'
+  - name: validez_dias
+    type: integer
+    patterns:
+      - '(?:validez|v[aá]lido[ \t]+por)[ \t]*(?:de[ \t]*)?:?[ \t]*(?P<value>\d{1,4})[ \t]*d[iíl1]as'
+  - name: codigo_verificacion
+    patterns:
+      - 'c[oóé6]digo[ \t]+de[ \t]+verificaci[oóé6]n[ \t]*:?[ \t]*(?P<value>[A-Z0-9\-]{4,40})'
+
+rules:
+  - { id: rut.titular, type: rut, field: rut_titular, optional: true }
+  - { id: fecha.emision_no_futura, type: date_not_future, field: fecha_emision, severity: warning }
+  - { id: fecha.orden, type: date_order, before: fecha_emision, after: fecha_vencimiento, severity: warning }
+  # Si no hay fecha de vencimiento ni días de validez en el documento, se asume validez de 30 días.
+  - { id: vigencia, type: vigencia, expiry_field: fecha_vencimiento, issue_field: fecha_emision,
+      validity_days_field: validez_dias, validity_days: 30 }

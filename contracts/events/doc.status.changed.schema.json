@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://validador.local/contracts/events/doc.status.changed.schema.json",
+  "title": "doc.status.changed",
+  "description": "Notificación de cambio de estado para la UI.",
+  "type": "object",
+  "required": [
+    "specversion",
+    "id",
+    "source",
+    "type",
+    "time",
+    "datacontenttype",
+    "correlationid",
+    "data"
+  ],
+  "properties": {
+    "specversion": {
+      "const": "1.0"
+    },
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "source": {
+      "type": "string",
+      "examples": [
+        "/documents-service",
+        "/doc-validator"
+      ]
+    },
+    "type": {
+      "const": "doc.status.changed"
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "datacontenttype": {
+      "const": "application/json"
+    },
+    "correlationid": {
+      "type": "string"
+    },
+    "data": {
+      "type": "object",
+      "required": [
+        "documentId",
+        "filename",
+        "status",
+        "updatedAt"
+      ],
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "QUEUED",
+            "PROCESSING",
+            "COMPLETED",
+            "FAILED"
+          ]
+        },
+        "verdict": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "VALID",
+            "INVALID",
+            "REVIEW",
+            null
+          ]
+        },
+        "documentType": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

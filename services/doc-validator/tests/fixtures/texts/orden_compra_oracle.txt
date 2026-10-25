@@ -1,0 +1,26 @@
+FECHA
+07-AGO-2026 ORDEN DE COMPRA
+Comercial Andes S.A., N°: 31415
+RUT: 77654321-7
+Av. Siempre Viva 742
+SANTIAGO
+Email: MONEDA PACTADA:
+Tel :
+CLP
+INFORMACIÓN DE PROVEEDOR
+Nombre – Razón Social: SERVICIOS DEL PACIFICO LTDA RUT: 76123456-0
+LOS CARRERA 100 Teléfono:
+Dirección: SANTIAGO
+CONDICIONES GENERALES
+Nombre del Comprador Juana Pérez Observaciones del Pedido Servicio mensual
+Nombre del Solicitante Términos de Pago 30 Días
+Código
+#Líne Poducto / Descripción Poducto / Fecha de Precio Totales
+Cant. UDM
+a OC Servicio Servicio Ordenado Entrega Unitario Netos
+1 300100200 Servicio mensual 14-AGO-2026 1 Unidad 125,400 $125,400.00
+FECHA DE ENTREGA: TOTAL NETO $125,400.00
+14-AGO-2026
+CONDICION DE PAGO: 30 Días IMPUESTO IVA 19% $23,826.00
+OTROS IMPUESTOS $0.00
+TOTAL $149,226.00

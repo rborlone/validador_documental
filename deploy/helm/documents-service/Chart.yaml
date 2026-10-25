@@ -1,0 +1,10 @@
+apiVersion: v2
+name: documents-service
+description: "Dueño del dominio documento: Blob, Postgres, outbox y resultados"
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+dependencies:
+  - name: vd-common
+    version: 0.1.0
+    repository: file://../vd-common

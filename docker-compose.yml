@@ -1,0 +1,98 @@
+name: validador-documental
+
+# Entorno local. En AKS cada servicio se despliega con su chart en deploy/helm.
+# Copia .env.example a .env y define ANTHROPIC_API_KEY para habilitar el respaldo con Claude.
+
+x-azurite-conn: &azurite-conn "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;"
+
+services:
+  rabbitmq:
+    image: rabbitmq:4.1-management-alpine
+    ports: ["5672:5672", "15672:15672"]
+    environment:
+      RABBITMQ_DEFAULT_USER: validador
+      RABBITMQ_DEFAULT_PASS: validador
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  postgres:
+    image: postgres:17-alpine
+    ports: ["5432:5432"]
+    environment:
+      POSTGRES_USER: documents
+      POSTGRES_PASSWORD: documents
+      POSTGRES_DB: documents
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U documents"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:3.34.0
+    command: azurite-blob --blobHost 0.0.0.0 --skipApiVersionCheck --loose
+    ports: ["10000:10000"]
+    volumes: ["azurite:/data"]
+
+  documents-service:
+    build: ./services/documents-service
+    environment:
+      PORT: "3100"
+      DATABASE_URL: postgresql://documents:documents@postgres:5432/documents
+      RABBITMQ_URL: amqp://validador:validador@rabbitmq:5672
+      AZURE_STORAGE_CONNECTION_STRING: *azurite-conn
+      BLOB_CONTAINER: documents
+      MAX_FILE_SIZE_MB: "20"
+      LOG_LEVEL: info
+    ports: ["3100:3100"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      azurite: { condition: service_started }
+
+  bff:
+    build: ./services/bff
+    environment:
+      PORT: "3000"
+      DOCUMENTS_SERVICE_URL: http://documents-service:3100
+      RABBITMQ_URL: amqp://validador:validador@rabbitmq:5672
+      CORS_ORIGIN: http://localhost:5173
+      LOG_LEVEL: info
+    ports: ["3000:3000"]
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+      documents-service: { condition: service_started }
+
+  doc-validator:
+    build: ./services/doc-validator
+    environment:
+      RABBITMQ_URL: amqp://validador:validador@rabbitmq:5672
+      AZURE_STORAGE_CONNECTION_STRING: *azurite-conn
+      BLOB_CONTAINER: documents
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      CLAUDE_MODEL: ${CLAUDE_MODEL:-claude-sonnet-5-5}
+      LLM_ENABLED: ${LLM_ENABLED:-true}
+      MAX_ATTEMPTS: "3"
+      PREFETCH: "2"
+      HEALTH_PORT: "8000"
+      LOG_LEVEL: INFO
+    ports: ["8000:8000"]
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+      azurite: { condition: service_started }
+
+  web:
+    build:
+      context: ./apps/web
+      args:
+        VITE_API_URL: http://localhost:3000
+    ports: ["5173:8080"]
+    depends_on: [bff]
+
+volumes:
+  pgdata:
+  azurite:

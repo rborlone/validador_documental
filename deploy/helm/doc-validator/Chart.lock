@@ -1,0 +1,6 @@
+dependencies:
+- name: vd-common
+  repository: file://../vd-common
+  version: 0.1.0
+digest: sha256:5672a09e280d845bfd222ba833c701570b7097312556955abf52c9738311bd99
+generated: "2026-10-24T20:05:03.465826-03:00"

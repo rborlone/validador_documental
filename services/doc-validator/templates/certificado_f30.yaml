@@ -1,0 +1,62 @@
+# Certificados de la Dirección del Trabajo: F30 (antecedentes laborales y previsionales) y
+# F30-1 (cumplimiento de obligaciones laborales y previsionales). Solo identificación y extracción.
+# Patrones escritos sin un ejemplo real a la vista: ajustarlos con documentos reales.
+id: certificado_f30
+version: "1.0.0"
+name: Certificado F30 / F30-1
+schema: certificado_f30
+
+classification:
+  description: >-
+    Certificado emitido por la Dirección del Trabajo de Chile sobre un empleador: F30
+    (antecedentes laborales y previsionales: multas, deudas previsionales) o F30-1
+    (cumplimiento de obligaciones laborales y previsionales respecto de sus trabajadores,
+    usado para acreditar contratistas y subcontratistas).
+  keywords:
+    - { pattern: 'certificado\s+de\s+antecedentes\s+laborales|cumplimiento\s+de\s+obligaciones\s+laborales|\bF[\s-]?30(?:[\s-]?1)?\b', weight: 5 }
+    - { pattern: 'direcci[oó]n\s+del\s+trabajo', weight: 3 }
+    - { pattern: 'previsional(?:es)?', weight: 2 }
+    - { pattern: '\bempleador', weight: 1 }
+    - { pattern: 'trabajadores', weight: 1 }
+    - { pattern: 'multas|deudas?\s+previsional|cotizaciones', weight: 1 }
+    - { pattern: 'subcontrat|contratista', weight: 1 }
+    - { pattern: 'c[oó]digo\s+de\s+verificaci[oó]n|verificar|validar', weight: 1 }
+
+fields:
+  - name: titulo
+    patterns:
+      - '(?P<value>certificado[ \t]+de[ \t]+cumplimiento[ \t]+de[ \t]+obligaciones[ \t]+laborales[^\n]*?)[ \t]*$'
+      - '(?P<value>certificado[ \t]+de[ \t]+antecedentes[ \t]+laborales[^\n]*?)[ \t]*$'
+  - name: numero_certificado
+    patterns:
+      - 'certificado[ \t]+(?:N[°º.]|n[uú]mero)<<SEP>>(?P<value>\d[\d\-/]{2,30})'
+      - '^[ \t]*folio<<SEP>>(?P<value>\d[\d\-/]{2,30})'
+  - name: razon_social
+    required: true
+    patterns:
+      - '(?:raz[oóé6]n[ \t]+social|nombre(?:[ \t]+del)?[ \t]+empleador)<<SEP>>(?P<value>[^\n]+?)(?=[ \t]+R\.?[ \t]?U\.?[ \t]?T|[ \t]*$)'
+      - '^[ \t]*empleador[ \t]*:[ \t]*(?P<value>[^\n]+?)(?=[ \t]+R\.?[ \t]?U\.?[ \t]?T|[ \t]*$)'
+  - name: rut_empleador
+    type: rut
+    required: true
+    patterns:
+      - '\bR\.?[ \t]?U\.?[ \t]?T\.?(?:[ \t]+(?:del[ \t]+)?(?:empleador|empresa|contratista))?<<SEP>>(?P<value><<RUT>>)'
+  - name: fecha_emision
+    type: date
+    patterns:
+      - 'fecha[ \t]+(?:de[ \t]+)?emisi[oóé6]n<<SEP>>(?P<value><<DATE>>)'
+      - 'emitido[ \t]+(?:el|con[ \t]+fecha)[ \t]*:?[ \t]*(?P<value><<DATE>>)'
+  - name: periodo
+    patterns:
+      - 'per[ií]odo(?:[ \t]+(?:informado|certificado|consultado))?[ \t]*:[ \t]*(?P<value>[^\n]{4,40}?)[ \t]*$'
+  - name: trabajadores
+    type: integer
+    patterns:
+      - '(?:n[°º.]?|n[uú]mero|total)[ \t]+(?:de[ \t]+)?trabajadores[^\n:\d]{0,30}<<SEP>>(?P<value>\d{1,6})\b'
+  - name: codigo_verificacion
+    patterns:
+      - 'c[oó]digo[ \t]+de[ \t]+verificaci[oóé6]n<<SEP>>(?P<value>[A-Z0-9\-]{4,40})'
+
+rules:
+  - { id: rut.empleador, type: rut, field: rut_empleador }
+  - { id: fecha.emision_no_futura, type: date_not_future, field: fecha_emision, severity: warning }

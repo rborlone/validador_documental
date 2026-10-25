@@ -1,0 +1,13 @@
+COMERCIAL ANDES LIMITADA
+ORDEN DE COMPRA N° OC-2026-0457
+Fecha: 10/03/2026
+Comprador: COMERCIAL ANDES LIMITADA RUT: 77.654.321-7
+Proveedor: ACME SERVICIOS SPA RUT: 76.123.456-0
+Fecha de entrega: 20-03-2026
+Condición de pago: 30 días
+Cant. Descripción P. Unitario Total
+5 Resma papel carta 500 hojas $ 4.500 $ 22.500
+2 Tóner impresora HP 85A $ 45.000 $ 90.000
+Neto: $ 112.500
+IVA (19%): $ 21.375
+Total: $ 133.875

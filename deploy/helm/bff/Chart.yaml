@@ -1,0 +1,10 @@
+apiVersion: v2
+name: bff
+description: "Backend for Frontend: API de la UI y notificaciones SSE (sin estado)"
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+dependencies:
+  - name: vd-common
+    version: 0.1.0
+    repository: file://../vd-common

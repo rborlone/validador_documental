@@ -1,0 +1,15 @@
+{{- include "vd.serviceaccount" . }}
+---
+{{ include "vd.deployment" . }}
+---
+{{ include "vd.service" . }}
+---
+{{ include "vd.hpa" . }}
+---
+{{ include "vd.pdb" . }}
+---
+{{ include "vd.networkpolicy" . }}
+---
+{{ include "vd.secretproviderclass" . }}
+---
+{{ include "vd.ingress" . }}

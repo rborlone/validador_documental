@@ -1,0 +1,18 @@
+ACME SERVICIOS SPA R.U.T.: 76.123.456-0
+Giro: Desarrollo de software y servicios informaticos FACTURA ELECTRONICA
+Av. Providencia 1234, Of. 501, Providencia, Santiago Ne 4521
+S.LL. - SANTIAGO ORIENTE
+Fecha Emisién: 15 de marzo de 2026
+Sefior(es): COMERCIAL ANDES LIMITADA
+R.U.T.: 77.654.321-7
+Giro: Comercio al por mayor de articulos de oficina
+Cantidad Descripcién Precio Unitario Total
+2 Licencia software gesti6n documental anual S 350.000 $ 700.000
+10 Horas de soporte técnico $ 25.000 $ 250.000
+1 Capacitaci6n a usuarios $ 50.000 $ 50.000
+MONTO NETO $ 1.000.000
+MONTO EXENTO $0
+LV.A, 19% $ 190.000
+TOTAL $ 1.190.000
+Timbre Electronico Sil
+Res. 80 de 2014 - Verifique documento: www.sii.cl

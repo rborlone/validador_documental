@@ -1,0 +1,64 @@
+# Carpeta tributaria electrónica del SII (para solicitar crédito, acreditar renta, etc.).
+# Solo identificación y extracción.
+id: carpeta_tributaria
+version: "1.0.0"
+name: Carpeta tributaria SII
+schema: carpeta_tributaria
+
+classification:
+  description: >-
+    Carpeta tributaria electrónica generada en el Servicio de Impuestos Internos (SII) con los
+    datos de un contribuyente: inicio de actividades, actividades económicas, régimen y categoría
+    tributaria, representantes, anotaciones vigentes y declaraciones de IVA (F29) y renta (F22).
+  keywords:
+    - { pattern: 'carpeta\s+tributaria', weight: 5 }
+    - { pattern: '\bSII\b|servicio\s+de\s+impuestos\s+internos', weight: 2 }
+    - { pattern: 'inicio\s+de\s+actividades', weight: 2 }
+    - { pattern: 'r[eé]gimen\s+tributario|categor[ií]a\s+tributaria', weight: 2 }
+    - { pattern: 'formulario\s+(?:29|22)|\bF\s?(?:29|22)\b', weight: 2 }
+    - { pattern: 'actividades\s+econ[oó]micas', weight: 1 }
+    - { pattern: 'representante\(?s?\)?\s+legal', weight: 1 }
+
+fields:
+  - name: tipo_carpeta
+    patterns:
+      - 'carpeta[ \t]+tributaria[ \t]+(?P<value>[^\n]+?(?:\r?\n[ \t]*para[ \t]+[^\n]+)?)[ \t]*$'
+  - name: razon_social
+    required: true
+    patterns:
+      - 'nombre[ \t]+del[ \t]+emisor<<SEP>>(?P<value>[^\n]+?)[ \t]*$'
+      - '(?:nombre[ \t]+o[ \t]+)?raz[oóé6]n[ \t]+social<<SEP>>(?P<value>[^\n]+?)[ \t]*$'
+  - name: rut
+    type: rut
+    required: true
+    patterns:
+      - 'R\.?[ \t]?U\.?[ \t]?T\.?[ \t]+del[ \t]+(?:emisor|contribuyente)<<SEP>>(?P<value><<RUT>>)'
+      - '\bR\.?[ \t]?U\.?[ \t]?T\.?<<SEP>>(?P<value><<RUT>>)'
+  - name: fecha_generacion
+    type: date
+    required: true
+    patterns:
+      - 'fecha[ \t]+de[ \t]+generaci[oóé6]n(?:[ \t]+de[ \t]+la[ \t]+carpeta)?<<SEP>>(?P<value><<DATE>>)'
+  - name: fecha_inicio_actividades
+    type: date
+    patterns:
+      - 'fecha[ \t]+de[ \t]+inicio[ \t]+de[ \t]+actividades<<SEP>>(?P<value><<DATE>>)'
+  - name: clasificacion_entidad
+    patterns:
+      - 'clasificaci[oóé6]n[ \t]+(?:de[ \t]+la[ \t]+)?entidad<<SEP>>(?P<value>[^\n]+?)[ \t]*$'
+  - name: actividades_economicas
+    patterns:
+      - 'actividades[ \t]+econ[oóé6]micas[ \t]*:[ \t]*(?P<value>[^\n]+?)[ \t]*$'
+  - name: categoria_tributaria
+    patterns:
+      - 'categor[ií]a[ \t]+tributaria[ \t]*:[ \t]*(?P<value>[^\n]+?)[ \t]*$'
+  - name: regimen_tributario
+    patterns:
+      - 'r[eé]gimen[ \t]+tributario[ \t]*:[ \t]*(?P<value>[^\n]+?)[ \t]*$'
+  - name: domicilio
+    patterns:
+      - '^[ \t]*domicilio[ \t]*:[ \t]*(?P<value>[^\n]+?)[ \t]*$'
+
+rules:
+  - { id: rut.contribuyente, type: rut, field: rut }
+  - { id: fecha.generacion_no_futura, type: date_not_future, field: fecha_generacion, severity: warning }

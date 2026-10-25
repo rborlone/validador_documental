@@ -1,0 +1,63 @@
+name: validador-motor
+
+# Combinación C de docs/piezas-lego.md: solo el motor de validación.
+# RabbitMQ + Blob (Azurite) + doc-validator, sin documents-service, BFF, UI ni Postgres.
+# Uso: ver README.md de esta carpeta.
+
+x-azurite-conn: &azurite-conn "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;"
+
+services:
+  rabbitmq:
+    image: rabbitmq:4.1-management-alpine
+    hostname: rabbitmq          # el nombre del nodo debe ser estable para que el volumen sirva al recrear
+    ports: ["5673:5672", "15673:15672"]   # puertos distintos para convivir con el compose principal
+    environment:
+      RABBITMQ_DEFAULT_USER: motor
+      RABBITMQ_DEFAULT_PASS: motor
+    volumes: ["rabbitmq:/var/lib/rabbitmq"]
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:3.34.0
+    command: azurite-blob --blobHost 0.0.0.0 --skipApiVersionCheck --loose
+    ports: ["10001:10000"]
+    volumes: ["azurite:/data"]
+
+  doc-validator:
+    build: ../../../services/doc-validator
+    environment:
+      RABBITMQ_URL: amqp://motor:motor@rabbitmq:5672
+      AZURE_STORAGE_CONNECTION_STRING: *azurite-conn
+      BLOB_CONTAINER: documents
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      LLM_ENABLED: ${LLM_ENABLED:-true}
+      PREFETCH: "2"
+      LOG_LEVEL: INFO
+    ports: ["8001:8000"]
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+      azurite: { condition: service_started }
+
+  # "Otro sistema" de ejemplo: sube un archivo, publica el evento y espera el resultado.
+  # docker compose run --rm cliente /docs/mi-archivo.pdf
+  cliente:
+    build: ../../../services/doc-validator      # reutiliza la imagen: ya trae aio-pika y azure-storage-blob
+    profiles: ["cliente"]
+    entrypoint: ["python", "/cliente/enviar.py"]
+    environment:
+      RABBITMQ_URL: amqp://motor:motor@rabbitmq:5672
+      AZURE_STORAGE_CONNECTION_STRING: *azurite-conn
+      BLOB_CONTAINER: documents
+    volumes:
+      - ./enviar.py:/cliente/enviar.py:ro
+      - ${DOCS_DIR:-./docs}:/docs:ro
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+
+volumes:
+  rabbitmq:
+  azurite:

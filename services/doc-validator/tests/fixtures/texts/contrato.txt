@@ -1,0 +1,8 @@
+CONTRATO DE PRESTACIÓN DE SERVICIOS
+En Santiago de Chile, a 15 de marzo de 2026, entre ACME SERVICIOS SPA, RUT N° 76.123.456-0,
+representada por don Juan Pérez, en adelante "el Prestador", y COMERCIAL ANDES LIMITADA,
+RUT N° 77.654.321-7, en adelante "el Cliente", se ha convenido el siguiente contrato:
+PRIMERO: El Prestador se obliga a prestar servicios de soporte informático.
+SEGUNDO: El precio mensual de $ 1.500.000 se pagará dentro de los primeros cinco días.
+TERCERO: El presente contrato tendrá vigencia hasta el 31 de diciembre de 2026.
+Las partes fijan domicilio en la ciudad de Santiago y firman en dos ejemplares.

@@ -1,0 +1,84 @@
+# Factura electrónica SII (DTE 33/34).
+# Macros disponibles en las regex: <<RUT>>, <<DATE>>, <<AMOUNT>>, <<INT>>.
+# Las regex se evalúan con IGNORECASE y MULTILINE; el valor se toma del grupo con nombre "value".
+id: factura_sii
+version: "1.0.0"
+name: Factura electrónica (SII)
+schema: factura_sii
+
+classification:
+  description: >-
+    Documento tributario electrónico (tipo 33 afecta o 34 exenta) con recuadro de RUT del
+    emisor, folio, timbre electrónico del SII, detalle de productos y totales neto/IVA/total.
+  keywords:
+    - { pattern: 'factura\s+(?:no\s+afecta\s+o\s+exenta\s+)?electr[oóé6]nica', weight: 5 }
+    - { pattern: '\bS\.?[ \t]?I\.?[ \t]?I\b', weight: 2 }
+    - { pattern: 'timbre\s+electr[oóé6]nico', weight: 2 }
+    - { pattern: 'verifique\s+(?:este\s+)?documento|www\.sii\.cl', weight: 1 }
+    - { pattern: 'res(?:oluci[oóé6]n|\.)\s*(?:ex(?:enta|\.)?\s*)?(?:n[°º.]?\s*)?\d+', weight: 1 }
+    - { pattern: 'monto\s+neto', weight: 1 }
+    - { pattern: '\bgiro\b', weight: 1 }
+    - { pattern: 'se(?:ñ|n|fi|ni)or(?:\(es\)|es)?[ \t]*:', weight: 1 }
+
+fields:
+  - name: folio
+    type: integer
+    required: true
+    patterns:
+      - 'folio[ \t]*:?[ \t]*(?:N[°º.]?[ \t]*)?(?P<value>\d{1,10})\b'
+      - '\bN[ \t]?[°º*.oe9][ \t]*:?[ \t]*(?P<value>\d{1,10})\b'
+  - name: rut_emisor
+    type: rut
+    required: true
+    patterns:
+      - 'R\.?[ \t]?U\.?[ \t]?T\.?[ \t]*:?[ \t]*(?P<value><<RUT>>)'
+  - name: razon_social_emisor
+    patterns:
+      - '^[ \t]*(?P<value>[^\n:]{3,80}?)[ \t]+R\.?[ \t]?U\.?[ \t]?T\.?[ \t]*:'
+  - name: rut_receptor
+    type: rut
+    required: true
+    patterns:
+      - 'se(?:ñ|n|fi|ni)or(?:\(es\)|es)?[\s\S]{0,250}?R\.?[ \t]?U\.?[ \t]?T\.?[ \t]*:?[ \t]*(?P<value><<RUT>>)'
+  - name: razon_social_receptor
+    patterns:
+      - 'se(?:ñ|n|fi|ni)or(?:\(es\)|es)?[ \t]*:[ \t]*(?P<value>[^\n]+?)[ \t]*$'
+  - name: fecha_emision
+    type: date
+    required: true
+    patterns:
+      - 'fecha[ \t]+(?:de[ \t]+)?emisi[oóé6]n[ \t]*:?[ \t]*(?P<value><<DATE>>)'
+  - name: lineas
+    type: lines
+    section: { start: 'descripci[oóé6]n', end: 'monto[ \t]+(?:neto|exento)' }
+    row_pattern: '^[ \t]*(?P<cantidad>\d{1,6})[ \t]+(?P<descripcion>.+?)[ \t]+(?P<precio_unitario><<AMOUNT>>)[ \t]+(?P<total><<AMOUNT>>)[ \t]*$'
+    columns: { cantidad: integer, descripcion: string, precio_unitario: amount, total: amount }
+  - name: monto_neto
+    type: amount
+    required: true
+    patterns:
+      - 'monto[ \t]+neto[ \t]*:?[ \t]*(?P<value><<AMOUNT>>)'
+  - name: monto_exento
+    type: amount
+    patterns:
+      - 'monto[ \t]+exento[ \t]*:?[ \t]*(?P<value><<AMOUNT>>)'
+  - name: iva
+    type: amount
+    required: true
+    patterns:
+      - '\b[IL1l]\.?[ \t]?V\.?[ \t]?A[.,]?[ \t]*(?:\(?[ \t]*19[ \t]*%[ \t]*\)?)?[ \t]*:?[ \t]*(?P<value><<AMOUNT>>)'
+  - name: monto_total
+    type: amount
+    required: true
+    occurrence: last
+    patterns:
+      - '\b(?:monto[ \t]+)?total(?:[ \t]+a[ \t]+pagar)?[ \t]*:?[ \t]*(?P<value><<AMOUNT>>)'
+
+rules:
+  - { id: rut.emisor, type: rut, field: rut_emisor }
+  - { id: rut.receptor, type: rut, field: rut_receptor }
+  - { id: fecha.emision_no_futura, type: date_not_future, field: fecha_emision, severity: warning }
+  - { id: totals.lineas, type: sum_lines, field: lineas, column: total, target: monto_neto }
+  - { id: totals.lineas_items, type: line_items, field: lineas, severity: warning }
+  - { id: totals.iva, type: iva, net: monto_neto, vat: iva, rate: 0.19 }
+  - { id: totals.total, type: total, net: monto_neto, vat: iva, exempt: monto_exento, total: monto_total }

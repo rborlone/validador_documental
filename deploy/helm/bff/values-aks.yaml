@@ -1,0 +1,23 @@
+# Valores de ejemplo para AKS. Reemplaza los <...>.
+image:
+  registry: <acr>.azurecr.io
+workloadIdentity:
+  clientId: <client-id-identidad-federada>
+secretsStore:
+  enabled: true
+  keyVaultName: <key-vault>
+  tenantId: <tenant-id>
+  objects:
+    - { keyVaultSecret: rabbitmq-url, key: RABBITMQ_URL }
+secretEnv:
+  - { name: RABBITMQ_URL, secretName: bff-secrets, key: RABBITMQ_URL }
+ingress:
+  enabled: true
+  host: validador.example.com
+  paths: [/api]
+  annotations:
+    # SSE: sin buffering y conexiones largas
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-body-size: "210m"
+  tls: [{ hosts: [validador.example.com], secretName: validador-tls }]

@@ -1,0 +1,70 @@
+nameOverride: ""
+fullnameOverride: ""
+replicaCount: 2
+image:
+  registry: ""          # p. ej. miacr.azurecr.io
+  repository: validador/doc-validator
+  tag: ""               # por defecto appVersion del chart
+  pullPolicy: IfNotPresent
+containerPort: 8000
+service:
+  port: 8000
+terminationGracePeriodSeconds: 120
+readOnlyRootFilesystem: true
+env:
+  BLOB_CONTAINER: "documents"
+  CLAUDE_MODEL: "claude-sonnet-5-5"
+  LLM_ENABLED: "true"
+  MAX_ATTEMPTS: "3"
+  PREFETCH: "2"
+  HEALTH_PORT: "8000"
+  LOG_LEVEL: "INFO"
+probes:
+  port: 8000
+  livePath: /health/live
+  readyPath: /health/ready
+resources:
+  requests: { cpu: 500m, memory: 768Mi }
+  limits: { memory: 2Gi }
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPU: 70
+keda:
+  enabled: true
+  minReplicas: 1        # 0 permite scale-to-zero a costa de latencia en el primer documento
+  maxReplicas: 10
+  messagesPerReplica: 4
+  rabbitmqSecret:       # secret con la URL amqp (sincronizado desde Key Vault)
+    name: doc-validator-secrets
+    key: RABBITMQ_URL
+pdb:
+  enabled: true
+  minAvailable: 1
+metrics:
+  enabled: true
+  port: 8000
+  path: /metrics
+workloadIdentity:
+  clientId: ""          # client id de la identidad administrada federada
+secretsStore:
+  enabled: false
+  keyVaultName: ""
+  tenantId: ""
+  secretName: doc-validator-secrets
+  objects: []           # [{ keyVaultSecret: nombre-en-kv, key: CLAVE_EN_SECRET }]
+secretEnv: []           # [{ name: VAR, secretName: doc-validator-secrets, key: CLAVE_EN_SECRET }]
+networkPolicy:
+  enabled: true
+  allowFrom: []
+  allowNamespaceLabels: {}
+ingress:
+  enabled: false
+  className: webapprouting.kubernetes.azure.com
+  host: ""
+  paths: []
+  annotations: {}
+  tls: []
+nodeSelector: {}
+tolerations: []

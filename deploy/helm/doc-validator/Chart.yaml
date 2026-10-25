@@ -1,0 +1,10 @@
+apiVersion: v2
+name: doc-validator
+description: "Worker de validación: OCR con Tesseract, reglas por template y Claude como respaldo"
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+dependencies:
+  - name: vd-common
+    version: 0.1.0
+    repository: file://../vd-common

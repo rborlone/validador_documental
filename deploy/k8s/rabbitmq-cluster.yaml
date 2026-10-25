@@ -1,0 +1,33 @@
+# RabbitMQ en AKS con el RabbitMQ Cluster Operator
+# (kubectl apply -f https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml).
+# 3 nodos para que las colas quorum toleren la pérdida de uno.
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: rabbitmq
+  namespace: validador
+spec:
+  replicas: 3
+  image: rabbitmq:4.1-management
+  resources:
+    requests: { cpu: 500m, memory: 1Gi }
+    limits: { memory: 1Gi }
+  persistence:
+    storageClassName: managed-csi-premium
+    storage: 20Gi
+  rabbitmq:
+    additionalConfig: |
+      default_queue_type = quorum
+      vm_memory_high_watermark.relative = 0.7
+  override:
+    statefulSet:
+      spec:
+        template:
+          spec:
+            topologySpreadConstraints:
+              - maxSkew: 1
+                topologyKey: topology.kubernetes.io/zone
+                whenUnsatisfiable: DoNotSchedule
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: rabbitmq

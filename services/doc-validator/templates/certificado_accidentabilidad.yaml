@@ -1,0 +1,76 @@
+# Certificado de accidentabilidad / siniestralidad emitido por un organismo administrador de la
+# Ley 16.744 (Mutual de Seguridad, ACHS, IST, ISL). Solo identificación y extracción: sin regla
+# de vigencia por ahora.
+id: certificado_accidentabilidad
+version: "1.0.0"
+name: Certificado de accidentabilidad
+schema: certificado_accidentabilidad
+
+classification:
+  description: >-
+    Certificado de una mutualidad u organismo administrador del seguro de accidentes del trabajo
+    (Mutual de Seguridad, ACHS, IST, ISL) con la estadística de accidentes de una empresa por
+    período: tasas de accidentabilidad, siniestralidad, frecuencia y gravedad, días perdidos y
+    cotización adicional. También se llama certificado de tasas o de indicadores de riesgo.
+  keywords:
+    - { pattern: 'tasa\s+de\s+accidentabilidad|certificado\s+de\s+(?:tasas|indicadores\s+de\s+riesgo|accidentabilidad|siniestralidad)|estad[ií]stica\s+de\s+accidentes', weight: 5 }
+    - { pattern: 'siniestralidad', weight: 2 }
+    - { pattern: 'tasa\s+(?:de\s+)?(?:frecuencia|gravedad)', weight: 2 }
+    - { pattern: 'mutual\s+de\s+seguridad|asociaci[oó]n\s+chilena\s+de\s+seguridad|\bACHS\b|instituto\s+de\s+seguridad\s+(?:del\s+trabajo|laboral)|\bIST\b|\bISL\b', weight: 2 }
+    - { pattern: 'd[ií]as\s+perdidos', weight: 1 }
+    - { pattern: '(?:n[°º]|n[uú]mero)\s+de\s+accident|accidentados', weight: 1 }
+    - { pattern: 'enferm(?:edad(?:es)?|os)\s+profesional', weight: 1 }
+    - { pattern: 'cotizaci[oó]n\s+adicional|ley\s+(?:n[°º]\s*)?16\.?744|decreto\s+(?:supremo\s+)?(?:n[°º]\s*)?(?:110|67)\b|\bD\.?S\.?\s*(?:n[°º]\s*)?(?:110|67)\b', weight: 1 }
+
+fields:
+  - name: numero_certificado
+    patterns:
+      - 'n[uú]mero[ \t]+(?:de[ \t]+)?certificado<<SEP>>(?P<value>\d[\d\-]{3,30})'
+      - '^[ \t]*folio[ \t]*:[ \t]*(?P<value>\d{4,15})\b'
+      - 'c[oó]d(?:igo|\.)?[ \t]*(?:de[ \t]+)?verificaci[oó]n[ \t]*:?[ \t]*(?P<value>[A-Z0-9\-]{4,40})'
+  - name: organismo
+    # Orden de preferencia: la carta de ACHS menciona a la Mutual como organismo anterior.
+    patterns:
+      - '(?P<value>asociaci[oó]n[ \t]+chilena[ \t]+de[ \t]+seguridad)'
+      - '(?P<value>instituto[ \t]+de[ \t]+seguridad[ \t]+del[ \t]+trabajo)'
+      - '(?P<value>instituto[ \t]+de[ \t]+seguridad[ \t]+laboral)'
+      - '(?P<value>mutual[ \t]+de[ \t]+seguridad)'
+  - name: empresa
+    required: true
+    patterns:
+      - 'certificamos[ \t]+que[ \t]+la[ \t]+empresa[ \t]+(?P<value>[^,\n]+?)[ \t]*(?:,|$)'
+      - 'raz[oóé6]n[ \t]+social<<SEP>>(?P<value>[^\n]+?)(?=[ \t]+R\.?[ \t]?U\.?[ \t]?T|[ \t]*$)'
+  - name: rut_empresa
+    type: rut
+    required: true
+    patterns:
+      - '\bR\.?[ \t]?U\.?[ \t]?T\.?(?:[ \t]+(?:de[ \t]+la[ \t]+)?empresa)?<<SEP>>(?P<value><<RUT>>)'
+      # OCR que pierde el guion o la "t" ("Ru 765227224"); el dígito verificador se valida igual.
+      - '\bR[uú]t?\.?[ \t]*:?[ \t]*(?P<value>\d{1,2}\.?\d{3}\.?\d{3}[-‐–]?[\dkK])\b'
+  - name: numero_adherente
+    patterns:
+      - 'adherente[\s\S]{0,80}?N[°º][ \t]*(?P<value>\d{4,12})'
+      - 'N[°º][ \t]*de\s+asociad[oa][ \t]+(?P<value>\d{4,12})'
+      - 'folio[ \t]+contrato<<SEP>>(?P<value>\d{3,12})'
+  - name: fecha_emision
+    type: date
+    patterns:
+      - 'fecha[ \t]+(?:de[ \t]+)?emisi[oóé6]n<<SEP>>(?:[a-záéíóú]+,[ \t]*)?(?P<value><<DATE>>)'
+      # Pie del certificado: "En Santiago: 28 del 08 del 2025" / "Santiago, 06 de octubre del 2025".
+      - '(?:^|[ \t])(?:en[ \t]+)?[A-ZÁÉÍÓÚ][a-záéíóú]{3,}[ \t]*[:,][ \t]*(?P<value>\d{1,2}[ \t]+del?[ \t]+[^\n]{2,12}?[ \t]+del?[ \t]+\d{4})'
+  - name: tasa_accidentabilidad
+    patterns:
+      - 'tasa[ \t]+de[ \t]+accidentabilidad(?:[ \t]*\(%\))?[ \t]*:?\s*(?P<value>\d+(?:[.,]\d+)?(?:\s+\d+(?:[.,]\d+)?){0,4})'
+  - name: tasa_siniestralidad
+    patterns:
+      - 'tasa[ \t]+de[ \t]+siniestralidad(?:[ \t]+por(?:[ \t]+inc(?:apacidad(?:es)?|\.)?[ \t]*temporal(?:es)?)?)?[ \t]*:?\s*(?P<value>\d+(?:[.,]\d+)?(?:\s+\d+(?:[.,]\d+)?){0,4})'
+  - name: tasa_frecuencia
+    patterns:
+      - 'tasa[ \t]+(?:de[ \t]+)?frecuencia[ \t]*:?\s*(?P<value>\d+(?:[.,]\d+)?(?:\s+\d+(?:[.,]\d+)?){0,4})'
+  - name: tasa_gravedad
+    patterns:
+      - 'tasa[ \t]+(?:de[ \t]+)?gravedad[ \t]*:?\s*(?P<value>\d+(?:[.,]\d+)?(?:\s+\d+(?:[.,]\d+)?){0,4})'
+
+rules:
+  - { id: rut.empresa, type: rut, field: rut_empresa }
+  - { id: fecha.emision_no_futura, type: date_not_future, field: fecha_emision, severity: warning }

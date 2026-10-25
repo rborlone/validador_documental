@@ -1,0 +1,20 @@
+node_modules/
+dist/
+build/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+deploy/helm/*/charts/
+
+# Documentos de prueba locales del motor standalone (pueden ser reales)
+deploy/standalone/doc-validator/docs/

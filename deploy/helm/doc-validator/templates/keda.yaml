@@ -1,0 +1,35 @@
+{{- if .Values.keda.enabled }}
+# Escala el worker según los mensajes pendientes en la cola de validación.
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: {{ include "vd.fullname" . }}-rabbitmq
+  labels: {{- include "vd.labels" . | nindent 4 }}
+spec:
+  secretTargetRef:
+    - parameter: host
+      name: {{ .Values.keda.rabbitmqSecret.name }}
+      key: {{ .Values.keda.rabbitmqSecret.key }}
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "vd.fullname" . }}
+  labels: {{- include "vd.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    name: {{ include "vd.fullname" . }}
+  minReplicaCount: {{ .Values.keda.minReplicas }}
+  maxReplicaCount: {{ .Values.keda.maxReplicas }}
+  pollingInterval: 10
+  cooldownPeriod: 300
+  triggers:
+    - type: rabbitmq
+      metadata:
+        protocol: amqp
+        queueName: doc-validator.requests
+        mode: QueueLength
+        value: {{ .Values.keda.messagesPerReplica | quote }}
+      authenticationRef:
+        name: {{ include "vd.fullname" . }}-rabbitmq
+{{- end }}
